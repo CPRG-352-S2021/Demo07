@@ -40,7 +40,28 @@ public class NoteDB {
 
     public Note get(int noteId) throws Exception {
         Note note = null;
-        // TODO
+        ConnectionPool conPool = ConnectionPool.getInstance();
+        Connection con = conPool.getConnection();
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String sql = "SELECT * FROM note WHERE note_id=?";
+        
+        try {
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, noteId);
+            rs = ps.executeQuery();
+            if(rs.next()){
+                String title = rs.getString(2);
+                String contents = rs.getString(3);
+                String owner = rs.getString(4);
+                note = new Note(noteId, title, contents, owner);
+            }
+        } finally {
+            DBUtil.closeResultSet(rs);
+            DBUtil.closePreparedStatement(ps);
+            conPool.freeConnection(con);
+        }
+        
         return note;
     }
 
